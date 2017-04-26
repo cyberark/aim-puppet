@@ -1,0 +1,239 @@
+# ------------------------------------------------------------------------------------------
+#   Copyright (c) 2016 CyberArk Software Inc.
+#
+# Manifest of AIM module. It defines for puppet the steps that should be taken in order to 
+# (un)install the Credential Provider on the node.
+# ------------------------------------------------------------------------------------------
+
+
+class aim {
+        
+    ################################ CONFIGURATION #####################
+    # As first step of the manifest, whether or not to make uninstall as the first step of the algorithm. 
+    # This includes also removing AIM provider user from Vault. 
+    $step1_uninstall               = false
+    
+    # As second and final step of the manifest, whether or not to make install as the second and final step of the algorithm. 
+    # This includes also adding AIM provider user in Vault. 
+    $step2_install                 = true 
+    
+    # The name of the deployed AIM provider is by default defined by the prefix 'Prov_' along with $hostname
+    $cp_user_prefix                = 'Prov_'
+    $cp_user                       = "${cp_user_prefix}$hostname" 
+    
+    # a set of key-value pairs that required for retrieval of admin credential.
+    # note that the key "query" comes as alternative to "safe", "folder" and "object"
+    $getAdminInfo                = { "appId" =>  'PuppetTest',
+                                    #"object" => 'AdminPass', 
+                                    #"folder" => 'ROOT',
+                                    #"safe"   => 'CyberArk Passwords',
+                                    "query"  => 'Safe=CyberArk Passwords;Folder=ROOT;Object=AdminPass',
+                                    }
+                                    
+    # information relevant to Creation/destruction of the provider in the Vault
+    $createEnvInfo                 = {  # The Location in the Vault hierarchy where the Provider user will be created.
+                                        "location"                => '\\Applications',
+    
+                                        # configuration filename to be used for the deployed provider.
+                                        "cp_safe_config"          => 'AppProviderConf',
+                                        "http_pvwa"               => 'https://Win2012R2-Template',
+                                        "cp_user"                 => $cp_user ,
+                                        
+                                        # a chain of zero or more groups, delimited with ":"  to add the new user. Example: "myGroup1:myGroup2"
+                                        "add_prov_user_to_groups" => "",
+                                        
+                                        # You can configure explicitly which certificates file of type 'pem'  to lookup for trusted 
+                                        # CA certificates (in order to communicate securely with PVWA). Otherwise, default 
+                                        # repository of certificates is being used
+                                        "cacert_file"             => '/opt/puppetlabs/puppet/ssl/cert.pem',
+                                    }
+
+    # As prerequisite, configuration file should already exist in the vault and its name is given by cp_config_file                             
+    $cp_config_file                = 'main_agent_appprovider.conf'
+    
+    # The filename of the RPM  to be installed
+    $installed_rpm                 = 'CARKaim-9.60.0.17.x86_64.rpm'
+
+    # Full path to log file. If empty string is set (""), then logs will be redirected to puppet builtin logging    
+    $full_path_log_file            = "/tmp/deploy${$cp_user}.log"
+    
+    # At the beginning of the execution the log file is flushed if above max_size_log_file (Units in bytes).
+    $max_size_log_file             = 400000
+   
+################################ EOF CONFIGURATION #####################
+
+
+    # Indeed, puppet has its own logging mechanism, but to have clear and concise logs related only to "aim" class, we
+    # shall write logs either from manifest or from customized ruby functions to the same configured log file: $full_path_log_file
+    calogger($full_path_log_file, $max_size_log_file)
+    
+    # As part of CP installation we need a privileged user to create a credential file. The privileged user will be held in 
+    # a safe and retrieved by the manifest of AIM Module. For our example, the privilege user expected to be retrieved by 
+    # AppId=PuppetTest that have access to safe=PuppetTest, and this safe holds object  'CyberArk Passwords'. This object 
+    # will hold the password. The username will be held as attribute 'UserName' of the same object.
+    
+
+    
+    if ($step1_uninstall == true) {
+    
+        # Retrieve administrative credential
+        $user_and_pwd = passfunc($getAdminInfo, $full_path_log_file)
+        # Delete CP environment from the Vault 
+        deleteenvironment($createEnvInfo, $user_and_pwd, $full_path_log_file)        
+
+        if ($installed_carkaim =~ /CARKaim-.*/) {
+            exec { 'uninst_provider':
+                command => '/bin/rpm -e CARKaim',
+                cwd =>'/etc/init.d/',
+            }  
+          
+            file {'remove_directory_opt':
+                ensure => absent,
+                path => '/opt/CARKaim',
+                recurse => true,
+                purge => true,
+                force => true,
+                require => Exec['uninst_provider'],
+            }
+            
+            file {'remove_directory_var_opt':
+                ensure => absent,
+                path => '/var/opt/CARKaim',
+                recurse => true,
+                purge => true,
+                force => true,
+                require => File['remove_directory_opt'],
+            }
+            
+            file {'remove_directory_etc_opt':
+                ensure => absent,
+                path => '/etc/opt/CARKaim',
+                recurse => true,
+                purge => true,
+                force => true,
+                require => File['remove_directory_var_opt'],
+            }        
+        }
+        else
+        {
+            notice("Not required to uninstall AIM Provider")
+        } # end if step1_uninstall
+    }
+    
+    if $step2_install {
+         if ($installed_carkaim =~ /CARKaim-.*/) and ($step1_uninstall == false) {
+            notice("CARKaim is already installed on the machine")
+         }
+         else {
+            
+            # Retrieve administrative credential, if not retrieved yet by step1
+            if ($step1_uninstall == false) {
+                $user_and_pwd = passfunc($getAdminInfo, $full_path_log_file)
+            }
+            
+            # Create environment in the Vault for the installed CP will be made by customized Ruby function that will use PVWA
+            # REST services instead of running CreateEnv command on agent side. This approach eliminates the need for the master to 
+            # send strong administrative privilege to agent(s) just for execution of CreateEnv
+            $prov_pwd = createenvironment($createEnvInfo, $user_and_pwd, $full_path_log_file)
+            
+            # remove unconditionally temporary folder
+            file {'remove_directory':
+                ensure => absent,
+                path => '/tmp/puppetInstallAIM',
+                recurse => true,
+                purge => true,
+                force => true,
+            }
+
+            # make dir temporary folder 'puppetInstallAIM'   
+            exec {'/bin/mkdir /tmp/puppetInstallAIM':
+                cwd =>'/tmp/',
+                require => File['remove_directory'],
+            } 
+
+            # Copy tarball installation file
+            file { "/tmp/puppetInstallAIM/aimInstall.tar.gz":
+                mode => '700',
+                owner => root,
+                group => root,
+                source => "puppet:///modules/aim/aimInstall.tar.gz",  
+                require => Exec['/bin/mkdir /tmp/puppetInstallAIM'],
+            }
+          
+            # Extract tarball installation file.
+            exec { 'extract_install_files' :
+                command => '/bin/tar zxvf /tmp/puppetInstallAIM/aimInstall.tar.gz',
+                cwd => '/tmp/puppetInstallAIM',
+                require => File['/tmp/puppetInstallAIM/aimInstall.tar.gz'],
+            }
+
+            # chmod CreateCredFile to executable 
+            file { "/tmp/puppetInstallAIM/CreateCredFile" :
+                mode => '700',
+                require => Exec['extract_install_files']
+            } 
+
+            # Copy file aimparms to folder /var/tmp
+            exec {'CopyAimpParams':
+                command => '/bin/mv /tmp/puppetInstallAIM/aimparms /var/tmp/aimparms',
+                cwd =>'/tmp/puppetInstallAIM/',
+                require => File['/tmp/puppetInstallAIM/CreateCredFile'],    
+            }
+          
+            # Copy file Vault.ini to folder /var/tmp 
+            exec {'CopyVaultParams':
+                command => '/bin/cp /tmp/puppetInstallAIM/Vault.ini /var/tmp/vault.ini',
+                cwd =>'/tmp/puppetInstallAIM/',
+                require => Exec['CopyAimpParams'],
+            }
+          
+            # install AIM provider. If already present then puppet will not attempt to install / update
+            package { 'CARKaim' :
+                provider => 'rpm',
+                source => "/tmp/puppetInstallAIM/$installed_rpm",
+                require => Exec['CopyVaultParams'],
+                ensure => 'present',          
+            } 
+            
+            # Create credential file for the new provider 
+            exec { 'createcred_exec' :
+                command => "/opt/CARKaim/bin/createcredfile /etc/opt/CARKaim/vault/appprovideruser.cred Password -Username $cp_user -Password $prov_pwd -apptype AppPrv -hostname -displayrestrictions",
+                cwd => '/opt/CARKaim/bin/',
+                require => Package['CARKaim'],
+            }  
+          
+            # Copy file vault.ini to /etc/opt/CARKaim/vault
+            exec {'CopyVaultConfigFileParams':
+                command => '/bin/cp /tmp/puppetInstallAIM/Vault.ini /etc/opt/CARKaim/vault/vault.ini',
+                cwd =>'/tmp/puppetInstallAIM/',
+                require => Exec['createcred_exec'],
+            }
+          
+            # update basic_appprovider.conf file to have correct AppProviderVaultParmsFile 
+            exec {'modifyBasicAppPrvConfig':
+                command => "/bin/sed -i 's|AppProviderVaultParmsFile=.*|AppProviderVaultParmsFile=\"$cp_config_file\"|' /etc/opt/CARKaim/conf/basic_appprovider.conf",
+                cwd =>'/etc/opt/CARKaim/conf/',
+                require => Exec['CopyVaultConfigFileParams'],
+            }  
+          
+            # now stop the provider
+            exec {'stopProvider':
+                command => '/etc/rc.d/init.d/aimprv stop',
+                cwd =>'/etc/rc.d/init.d/',
+                require => Exec['modifyBasicAppPrvConfig'],
+            }  
+          
+            # now start the provider
+            exec {'startProvider':
+                command => '/etc/rc.d/init.d/aimprv start',
+                cwd =>'/etc/rc.d/init.d/',
+                require => Exec['stopProvider'],
+            }  
+          
+            # delete unconditionally (no 'require') temporary folder 'puppetInstallAIM'
+            exec {'/bin/rm -rf /tmp/puppetInstallAIM  ':
+                cwd =>'/tmp/',
+            }  
+        }
+    } # end if step2_install
+}
