@@ -31,7 +31,7 @@ module Puppet::Parser::Functions
         end
         
         logger.debug("****************************************")
-        logger.debug("********** Invoking  AIM  class ********")
+        logger.debug("******** Started CyberArk Logger *******")
         logger.debug("****************************************")
         logger.close
   end
