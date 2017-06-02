@@ -131,7 +131,7 @@ module CyberArk
         
         if uri.port == 443 or uri.scheme == 'https'
             http.use_ssl = true
-#             http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+            # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
             http.verify_mode = OpenSSL::SSL::VERIFY_PEER
             http.cert_store = OpenSSL::X509::Store.new
             http.cert_store.set_default_paths
@@ -170,11 +170,6 @@ module CyberArk
 
         req.add_field('Authorization', "#{@@session_token}")
 
-#         if token && ! token.empty?
-#           Puppet.debug("Initialize Session!")
-#           req.add_field('Authorization', "token #{token}")
-#         end
-        
         req.body = data if data && valid_json?(data)
         
         Puppet.debug("webservices::#{calling_method}: REST API #{req.method} Endpoint: #{uri.to_s}")
