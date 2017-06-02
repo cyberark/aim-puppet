@@ -19,6 +19,11 @@ class aim::provider(
     $provider_user_groups           = $aim::params::provider_user_groups,
     $certificate_file               = $aim::params::certificate_file,
     $webservices_sdk_baseurl        = $aim::params::webservices_sdk_baseurl,
+    $main_app_provider_conf_file    = $aim::params::main_app_provider_conf_file,
+    $aim_distribution_file          = $aim::params::aim_distribution_file,
+    $aim_folder_within_distribution = $aim::params::aim_folder_within_distribution,
+    $distribution_source_path       = $aim::params::distribution_source_path,
+    $aim_rpm_to_install             = $aim::params::aim_rpm_to_install,
 ) inherits  aim::params {
     
     

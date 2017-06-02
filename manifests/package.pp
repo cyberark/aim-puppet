@@ -3,16 +3,22 @@
 class aim::package {
     
     if ($aim::provider::ensure == 'present') {
+        
+        notify {"CyberArk aim::package [${aim::provider::package_is_installed}]": withpath => true}
     
         if ($aim::provider::package_is_installed == false) {
             
+                        
+            if ($aim::provider::aim_folder_within_distribution == '') {
+                $folderWithinArchive = $aim::provider::aim_distribution_file.split("-")[0]
+            } else {
+                $folderWithinArchive = $aim::provider::aim_folder_within_distribution
+            }
+            
             $tmpDirectory = '/tmp/puppetInstallAIM'
-            $aimFileArchive = 'RHELinux-x64-Rls-v9.8.zip'
-            $folderWithinArchive = "RHELinux x64"
+            $aimFileArchive = $aim::provider::aim_distribution_file 
             
             $fullPath = "${tmpDirectory}/${aimFileArchive}"
-            
-            # notify {"Package is not installed!":}
             
             # make dir temporary folder 'puppetInstallAIM'   
             file {'create_directory':
@@ -33,7 +39,7 @@ class aim::package {
                 mode => '700',
                 owner => root,
                 group => root,
-                source => "puppet:///aim_module/${aimFileArchive}",  
+                source => "$aim::provider::distribution_source_path/${aimFileArchive}",  
                 require => Tidy['remove_directory_content'],
             }
             
@@ -106,11 +112,21 @@ class aim::package {
                 path => "/var/tmp/aimparms",
                 require => File["copy_aimparms"],
             }
+    
+            # Changes to /var/tmp/aimparms
+            ini_setting { 'MainAppProviderConfFile':
+                ensure => present,
+                section => 'Main',
+                setting => 'MainAppProviderConfFile',
+                value => "$aim::provider::main_app_provider_conf_file",
+                path => "/var/tmp/aimparms",
+                require => File["copy_aimparms"],
+            }
             
             # Install Package 
             package { "CARKaim":
                 ensure  => installed,
-                source  => "/tmp/installation/CARKaim-9.80.0.85.x86_64.rpm",
+                source  => "/tmp/installation/$aim::provider::aim_rpm_to_install",
                 provider => 'rpm',
                 require => Ini_setting["VaultFilePath"],
             }
@@ -144,6 +160,17 @@ class aim::package {
                 require => File["CopyVaultConfigFileParams"],
             }
 
+            if ($aim::provider::main_app_provider_conf_file != '') {
+                # Changes to /etc/opt/CARKaim/conf/basic_appprovider.conf
+                ini_setting { 'modifyBasicAppPrvConfig':
+                    ensure => present,
+                    section => 'Main',
+                    setting => 'AppProviderVaultParmsFile',
+                    value => "$aim::provider::main_app_provider_conf_file",
+                    path => "/etc/opt/CARKaim/conf/basic_appprovider.conf",
+                    require => File["CopyVaultConfigFileParams"],
+                }                
+            }
             
             # delete unconditionally (no 'require') temporary folder 'puppetInstallAIM'
             exec {'/bin/rm -rf /tmp/puppetInstallAIM  ':
@@ -159,7 +186,7 @@ class aim::package {
                         
         } else {
             # packaged is already installed
-            notice("CyberArk AIM Package is already installed")
+            notify {"CyberArk AIM Package is already installed": withpath => true}
         }
         
     } elsif ($aim::provider::ensure == 'absent') {
@@ -167,9 +194,20 @@ class aim::package {
         # Install Package 
         package { "CARKaim":
             ensure  => 'absent',
-            source  => "/tmp/installation/CARKaim-9.80.0.85.x86_64.rpm",
             provider => 'rpm',
         }
+
+        # delete unconditionally (no 'require') /etc/opt/CARKaim
+        exec {'/bin/rm -rf /etc/opt/CARKaim  ':
+            cwd =>'/tmp/',
+            require => Package["CARKaim"],
+        }  
+
+        # delete unconditionally (no 'require') /var/opt/CARKaim
+        exec {'/bin/rm -rf /var/opt/CARKaim  ':
+            cwd =>'/tmp/',
+            require => Package["CARKaim"],
+        }  
         
     }
    

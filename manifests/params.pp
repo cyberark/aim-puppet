@@ -28,9 +28,14 @@ class aim::params {
     
 
     # As prerequisite, configuration file should already exist in the vault and its name is given by cp_config_file                             
-    $cp_config_file                 = 'main_agent_appprovider.conf'
+    $main_app_provider_conf_file    = ''
+    
+    $aim_distribution_file          = ''
+    $aim_folder_within_distribution = ''
+    $distribution_source_path       = 'puppet:///aim_module'
     
     # The filename of the RPM  to be installed
     $installed_rpm                  = 'CARKaim-9.60.0.17.x86_64.rpm'
+    $aim_rpm_to_install             = ''
     
 }
