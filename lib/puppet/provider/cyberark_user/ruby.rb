@@ -12,51 +12,44 @@ Puppet::Type.type(:cyberark_user).provide(:ruby, :parent => PuppetX::CyberArk::W
  
     def self.instances 
         Puppet.debug("def self.instances ==> returning empty list")
-#         Puppet.debug(" Resource => #{self.name}")
         result = []
         result
     end
     
     def self.prefetch(resources)
+        
         Puppet.debug("Pre-fetch")
-        # Puppet.debug(" Resource => #{@resource[:login_username]}")
         instances.each do |prov|
             if resource = resources[prov.name]
               resource.provider = prov
             end
         end
+        
     end    
     
     def underscore(value)
+        
         value.gsub(/::/, '/').
         gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
         gsub(/([a-z\d])([A-Z])/,'\1_\2').
         tr("-", "_").
         downcase
+        
     end    
 	
     def exists?
+        
         Puppet.debug("def exists?")
-        Puppet.debug("*** LOGIN username => #{@resource[:login_username]}")
-        #PuppetX::CyberArk::WebServices.set_base_url("http://192.168.86.162")
+        # Puppet.debug("*** LOGIN username => #{@resource[:login_username]}")
         result = PuppetX::CyberArk::WebServices.get("/PasswordVault/WebServices/PIMServices.svc/Users/#{self.name}", data: nil, resource: @resource)
         Puppet.debug("Result => #{result}")
-        if result && result.key?("UserName")
-            
-            data = {}
-            
-            result.each do |key, value|
-                newKey = underscore(key)
-                data[newKey] = value
-                Puppet.debug(" #{newKey} => #{value}")
-                @property_hash[newKey] = value
-            end
-            
+
+        if result && result.key?("UserName")            
             return true
         else
             return false
         end
-        # @property_hash[:ensure] == :present
+        
     end
     
     def flush
@@ -70,10 +63,9 @@ Puppet::Type.type(:cyberark_user).provide(:ruby, :parent => PuppetX::CyberArk::W
         @property_flush.each do |key, value|
             newKey = (key.to_s.split("_").each {|s| s.capitalize! }.join(""))
             data[newKey] = value
-            Puppet.debug(" #{newKey} => #{value}")
         end
         
-        Puppet.debug(" data => #{data.to_json}")
+        # Puppet.debug(" data => #{data.to_json}")
         
         if !data.empty?
             result = PuppetX::CyberArk::WebServices.put("/PasswordVault/WebServices/PIMServices.svc/Users/#{@resource[:username]}", data: data.to_json)
@@ -172,7 +164,7 @@ Puppet::Type.type(:cyberark_user).provide(:ruby, :parent => PuppetX::CyberArk::W
         	data[:Location] = @resource['location']
         end
     	
-    	Puppet.debug(data.to_json)
+    	# Puppet.debug(data.to_json)
     	
     	result = PuppetX::CyberArk::WebServices.post("/PasswordVault/WebServices/PIMServices.svc/Users", data: data.to_json, resource: nil)
 
@@ -181,17 +173,12 @@ Puppet::Type.type(:cyberark_user).provide(:ruby, :parent => PuppetX::CyberArk::W
         	groups_array = @resource['groups_to_be_added_to'].split(",")
         	
         	groups_array.each do | groupname |
-            	Puppet.debug(" group => #{groupname}")
+            	Puppet.debug("Adding #{@resource[:username]} to group => #{groupname}")
             	gData = {"UserName" => @resource[:username]}
                 gResult = PuppetX::CyberArk::WebServices.post("/PasswordVault/WebServices/PIMServices.svc/Groups/#{groupname}/Users", data: gData.to_json, resource: nil)            	
             end
-            Puppet.debug("**** groups_to_be_added_to = #{groups_array}")
-#         	data[:GroupName] = @resource['group_name']
         end
     	
-    	    	
-    	Puppet.debug("#{@resource['user_type_name']}")
-    	Puppet.debug(@property_hash[:user_type_name])
 	end
 	
 

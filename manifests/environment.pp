@@ -16,6 +16,7 @@ class aim::environment {
             
             $prov_user_pwd = cyberark_random_password()
             
+            # Ensure Provider User is created.
             cyberark_user { $aim::provider::provider_username:
                 base_url => $aim::provider::webservices_sdk_baseurl,
                 use_shared_logon_authentication => false,
@@ -25,14 +26,7 @@ class aim::environment {
                 groups_to_be_added_to => $aim::provider::provider_user_groups,
                 user_type_name => "AppProvider",
                 location => $aim::provider::provider_user_location,
-            }
-            
-            debug("======= ENVIRONMENT.PP ===========")
-            debug($user_and_pwd)
-            debug("==================================")
-            
-                        
-            # $prov_pwd = createenvironment($createEnvInfo, $user_and_pwd, $aim::provider::aim_path_log_file)
+            }            
             
             # Create credential file for the new provider 
             exec { 'createcred_exec' :
@@ -43,10 +37,11 @@ class aim::environment {
         }
 
     } elsif ($aim::provider::ensure == 'absent') {
-        # Retrieve administrative credential
-        
+
+        # Retrieve administrative credential        
         $user_and_pwd = cyberark_credential($getAdminInfo, $aim::provider::aim_path_log_file)
 
+        # Ensure Provider user is removed.
         cyberark_user { $aim::provider::provider_username:
             ensure => "absent",
             base_url => $aim::provider::webservices_sdk_baseurl,
@@ -54,12 +49,6 @@ class aim::environment {
                 login_username => $user_and_pwd[0],
                 login_password => $user_and_pwd[1],
         }
-        
-        debug("======= ENVIRONMENT.PP ===========")
-        debug($user_and_pwd)
-        debug("==================================")
-
-        # deleteenvironment($createEnvInfo, $user_and_pwd, $aim::provider::aim_path_log_file)        
         
     }
 }
