@@ -71,6 +71,29 @@ module Puppet::Parser::Functions
         require 'securerandom'        
         return "X_"+SecureRandom.hex(10)
     end
+    
+    newfunction(:cyberark_new_session_id, :type => :rvalue) do |args|
+        
+        filenameCounterSessionId = "/tmp/counter_aim_sessionid"
+        
+        sid = 0
+                    
+        # Use file lock mechanism to achieve atomic sessionId allocation. Effective range is 1-100
+        # (Some OSs might not support flock)
+        File.open(filenameCounterSessionId, File::RDWR|File::CREAT, 0644) {|f|
+            f.flock(File::LOCK_EX)
+            sid = f.read.to_i + 1
+            if sid == 100
+                sid = 1
+            end
+            f.rewind
+            f.write("#{sid}\n")
+            f.flush
+            f.truncate(f.pos)            
+        }
+        return sid
+    end
+    
   
 end
 

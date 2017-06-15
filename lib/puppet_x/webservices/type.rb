@@ -19,8 +19,8 @@ module CyberArk::WebServices::Type
       end
     end
     
-    def add_parameter_certificate_file
-      newparam(:certificate_file) do
+    def add_parameter_webservices_certificate_file
+      newparam(:webservices_certificate_file) do
         desc 'Certificate File to be used when invoking HTTPS webservice calls.'
         munge do |value|
           String(value)
@@ -69,8 +69,6 @@ module CyberArk::WebServices::Type
     def add_parameter_connection_number
       newparam(:connection_number) do
         desc 'In order to allow more than one connection for the same user simultaneously, each request should be sent with different "connectionNumber". Valid values: 0-100.'
-        defaultto :false
-        newvalues(:true, :false)
         munge do |value|
           String(value)
         end

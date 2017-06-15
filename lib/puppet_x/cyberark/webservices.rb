@@ -15,7 +15,7 @@ module PuppetX
         
         @@base_url = ""
         
-        @@certificate_file = ""
+        @@webservices_certificate_file = ""
         
         def self.set_base_url(url)
             Puppet.debug("Setting base_url to #{url}")
@@ -32,21 +32,20 @@ module PuppetX
             
         end
 
-        def self.set_certificate_file(certfile)
+        def self.set_webservices_certificate_file(certfile)
             Puppet.debug("Setting certificate file to #{certfile}")
-            @@certificate_file = certfile
+            @@webservices_certificate_file = certfile
         end
         
-        def self.certificate_file
+        def self.webservices_certificate_file
             
-            Puppet.debug("certificate file = #{@@certificate_file}")
+            Puppet.debug("certificate file = #{@@webservices_certificate_file}")
             
-            return ENV["CyberArk_PVWA_CertificateFile"] if @@certificate_file.empty? && ENV["CyberArk_PVWA_CertificateFile"]
-            return @@certificate_file
+            return ENV["CyberArk_PVWA_CertificateFile"] if @@webservices_certificate_file.empty? && ENV["CyberArk_PVWA_CertificateFile"]
+            return @@webservices_certificate_file
             
         end
 
-        
         def self.calling_method
             # Get calling method and clean it up for good reporting
             cm = String.new
@@ -115,9 +114,9 @@ module PuppetX
                         Puppet.debug("Setting base_url to #{resource[:resource].parameters[:base_url].value}")
                         self.set_base_url(resource[:resource].parameters[:base_url].value)
                     end 
-                    if resource[:resource].parameters[:certificate_file] != nil
-                        Puppet.debug("Setting certificate_file to #{resource[:resource].parameters[:certificate_file].value}")
-                        self.set_certificate_file(resource[:resource].parameters[:certificate_file].value)
+                    if resource[:resource].parameters[:webservices_certificate_file] != nil
+                        Puppet.debug("Setting certificate_file to #{resource[:resource].parameters[:webservices_certificate_file].value}")
+                        self.set_webservices_certificate_file(resource[:resource].parameters[:webservices_certificate_file].value)
                     end 
                 end
 
@@ -135,8 +134,8 @@ module PuppetX
                     http.verify_mode = OpenSSL::SSL::VERIFY_PEER
                     http.cert_store = OpenSSL::X509::Store.new
                     http.cert_store.set_default_paths
-                    if certificate_file != ""
-                        http.cert_store.add_file(certificate_file)
+                    if webservices_certificate_file != ""
+                        http.cert_store.add_file(webservices_certificate_file)
                     end
                 else
                     http.use_ssl = false
@@ -208,6 +207,14 @@ module PuppetX
                     if resource[:resource].parameters[:login_username] && resource[:resource].parameters[:login_password]
                         data['username'] = resource[:resource].parameters[:login_username].value
                         data['password'] = resource[:resource].parameters[:login_password].value
+                        
+                        if resource[:resource].parameters[:connection_number] != nil 
+                            connection_number = resource[:resource].parameters[:connection_number].value.to_i
+                            data['connectionNumber'] = connection_number
+                            Puppet.debug("Connection Number => #{resource[:resource].parameters[:connection_number].value.to_i}")
+                        end
+                        
+                        Puppet.debug("logon data => #{data.to_json}")
                     else
                         fail("webservices::#{calling_method}: Unable to logon. Missing username/password")
                     end

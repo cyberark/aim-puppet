@@ -191,23 +191,25 @@ class aim::package {
         
     } elsif ($aim::provider::ensure == 'absent') {
         
-        # Install Package 
-        package { "CARKaim":
-            ensure  => 'absent',
-            provider => 'rpm',
+        if ($aim::provider::package_is_installed) {
+            # Uninstall Package 
+            package { "CARKaim":
+                ensure  => 'absent',
+                provider => 'rpm',
+            }
+    
+            # delete unconditionally (no 'require') /etc/opt/CARKaim
+            exec {'/bin/rm -rf /etc/opt/CARKaim  ':
+                cwd =>'/tmp/',
+                require => Package["CARKaim"],
+            }  
+    
+            # delete unconditionally (no 'require') /var/opt/CARKaim
+            exec {'/bin/rm -rf /var/opt/CARKaim  ':
+                cwd =>'/tmp/',
+                require => Package["CARKaim"],
+            }  
         }
-
-        # delete unconditionally (no 'require') /etc/opt/CARKaim
-        exec {'/bin/rm -rf /etc/opt/CARKaim  ':
-            cwd =>'/tmp/',
-            require => Package["CARKaim"],
-        }  
-
-        # delete unconditionally (no 'require') /var/opt/CARKaim
-        exec {'/bin/rm -rf /var/opt/CARKaim  ':
-            cwd =>'/tmp/',
-            require => Package["CARKaim"],
-        }  
         
     }
    
