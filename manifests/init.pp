@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------------------
 #   Copyright (c) 2016 CyberArk Software Inc.
 #
-# Manifest of AIM module. It defines for puppet the steps that should be taken in order to 
+# Manifest of AIM module. It defines for puppet the steps that should be taken in order to
 # (un)install the Credential Provider on the node.
 # ------------------------------------------------------------------------------------------
 
@@ -14,22 +14,22 @@
 # @param vault_address [String] Specifies the CyberArk Vault address either hostname or IP.
 # @param vault_port [Integet] Specifies the communication port to CyberArk Vault, by default it uses port 1858.
 # @param admin_credential_aim_appid [String] Specifies the CyberArk Application ID to be used during the AIM query for admin credential.
-# @param admin_credential_aim_query [String] Specifies the AIM query to obtain the admin credentials for user to perform actions in CyberArk.
-# @param use_shared_logon_authentication [Boolean] Specifies whether to use shared logon authentication for the CyberArk WebServices Rest API Calls.
+# @param admin_credential_aim_query [String] Specifies the AIM query to obtain the admin credentials to perform actions in CyberArk.
+# @param use_shared_logon_authentication [Boolean] Specifies whether to use shared logon auth for CyberArk WebServices REST API calls.
 # @param aim_path_log_file [Stdlib::Absolutepath] Specifies the path for the AIM operations log file.
 # @param provider_user_location [String] Specifies CyberArk location for the provider user to be place at creation.
 # @param provider_safe_config [String] Specifies the name of the provider configuration safe.
 # @param provider_username [String] Specifies the name of the provider user.
 # @param provider_user_groups [String] Specifies the group(s) to add the provider user right after creation.
-# @param webservices_certificate_file [Optional String] Specifies the full path for the certificate to use for CyberArk WebServices Rest API Calls.
+# @param webservices_certificate_file [Optional String] Specifies full path for certificate to use for CyberArk WebServices REST API Calls.
 # @param webservices_sdk_baseurl [Stdlib::Httpurl] Specifies the Base URL for CyberArk WebServices Rest API Calls.
 # @param main_app_provider_conf_file [String] Specifies the name of the provider's main configuration file.
 # @param aim_distribution_file [String] Specifies the name of the AIM Zip distribution file.
-# @param aim_folder_within_distribution [String] Specifies the folder insider the distribution file containing the installation files for the provider.
+# @param aim_folder_within_distribution [String] Specifies the folder within distribution file containing installation files for provider.
 # @param distribution_source_path [String] Specifies the distribution file (like "puppet:///aim_module").
 # @param aim_rpm_to_install [String] Specifies the name of the RPM file to install.
 
-class aim::provider ( 
+class aim::provider (
     String $ensure = 'present',
     String $vault_address = $aim::params::vault_address,
     Integer $vault_port = $aim::params::vault_port,
@@ -49,8 +49,8 @@ class aim::provider (
     String $distribution_source_path = $aim::params::distribution_source_path,
     String $aim_rpm_to_install = $aim::params::aim_rpm_to_install,
 ) inherits  aim::params {
-    
-    
+
+
     include '::aim::package'
     include '::aim::environment'
     include '::aim::service'
@@ -60,5 +60,5 @@ class aim::provider (
     ~> Class['aim::environment']
     -> Class['aim::service']
     -> anchor { 'aim::provider::end': }
-          
+
 }

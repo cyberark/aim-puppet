@@ -13,7 +13,7 @@
 
 ## Module description
 
-The aim::provider module installs, configures, and manages the CyberArk AIM Credential Provider (aimprv) service.
+The aim::provider module installs, configures, and manages the CyberArk AIM Credential Provider. This includes the package, and service.
 
 ## Setup
 
