@@ -34,13 +34,14 @@ This includes the binary package, configuration file, service and provider user 
 
 #### Private classes
 
-* aim::params: default parameter values
-* aim:\:package: Handles the packages.
-* aim::environment: Handles the configuration environment in CyberArk vault.
-* aim::service: Handles the service.
+* aim::params - Defines the parameters and default values for the AIM module.
+* aim::package - Handles the AIM Povider package.
+* aim::environment - Handles the configuration environment in CyberArk vault.
+* aim::service -  Handles the AIM Provider (aimprv) service.
 
 ### Parameters
 
+The following parameters are available in the ::aim:provider class:
 
 ## Limitations
 
