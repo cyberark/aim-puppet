@@ -13,7 +13,8 @@
 
 ## Module description
 
-The aim::provider module installs, configures, and manages the CyberArk AIM Credential Provider. This includes the package, and service.
+The aim::provider module installs, configures, and manages the CyberArk AIM Credential Provider.
+This includes the binary package, configuration file, service and provider user environment in CyberArk.
 
 ## Setup
 
@@ -34,7 +35,7 @@ The aim::provider module installs, configures, and manages the CyberArk AIM Cred
 #### Private classes
 
 * aim::params: default parameter values
-* aim::package: Handles the packages.
+* aim:\:package: Handles the packages.
 * aim::environment: Handles the configuration environment in CyberArk vault.
 * aim::service: Handles the service.
 

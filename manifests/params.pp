@@ -1,4 +1,15 @@
 
+# ------------------------------------------------------------------------------------------
+#   Copyright (c) 2017 CyberArk Software Inc.
+#
+# Manifest of AIM module. It defines for puppet the steps that should be taken in order to
+# (un)install the Credential Provider on the node.
+# ------------------------------------------------------------------------------------------
+
+# aim::params
+#
+# The aim::params class defines the parameters for the AIM module.
+#
 
 class aim::params {
 

@@ -3,7 +3,7 @@ module CyberArk; end
 module CyberArk::WebServices; end
 
 module CyberArk::WebServices::Type
-    
+
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -18,7 +18,7 @@ module CyberArk::WebServices::Type
         end
       end
     end
-    
+
     def add_parameter_webservices_certificate_file
       newparam(:webservices_certificate_file) do
         desc 'Certificate File to be used when invoking HTTPS webservice calls.'
@@ -45,7 +45,7 @@ module CyberArk::WebServices::Type
         end
       end
     end
-    
+
     def add_parameter_login_newpassword
       newparam(:login_newpassword) do
         desc 'The new password of the login user. This parameter is optional, and enables you to change a password.'
@@ -54,7 +54,7 @@ module CyberArk::WebServices::Type
         end
       end
     end
-    
+
     def add_parameter_use_radius_authentication
       newparam(:use_radius_authentication) do
         desc 'Whether or not users will be authenticated via a RADIUS server. Valid values: true/false.'
@@ -65,7 +65,7 @@ module CyberArk::WebServices::Type
         end
       end
     end
-    
+
     def add_parameter_connection_number
       newparam(:connection_number) do
         desc 'In order to allow more than one connection for the same user simultaneously, each request should be sent with different "connectionNumber". Valid values: 0-100.'
@@ -74,7 +74,7 @@ module CyberArk::WebServices::Type
         end
       end
     end
-    
+
     def add_parameter_use_shared_logon_authentication
       newparam(:use_shared_logon_authentication) do
         desc 'Whether or not users will be authenticated via a RADIUS server. Valid values: true/false.'
@@ -84,7 +84,7 @@ module CyberArk::WebServices::Type
           String(value)
         end
       end
-    end    
-    
+    end
+
   end
 end

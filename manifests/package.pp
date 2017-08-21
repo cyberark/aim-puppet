@@ -1,4 +1,18 @@
 
+# ------------------------------------------------------------------------------------------
+#   Copyright (c) 2017 CyberArk Software Inc.
+#
+# Manifest of AIM module. It defines for puppet the steps that should be taken in order to
+# (un)install the Credential Provider on the node.
+# ------------------------------------------------------------------------------------------
+
+# aim::package
+#
+# The aim::package class makes sure the AIM provider package (along with configuration files) is installed
+# when ensure == "present", it will unzip distribution, setup parameters in configuration files, setup
+# permissions on files, and installs the distribution package.
+# In case of ensure == "absent", it will uninstall the CARKaim package and remove distribution folders.
+#
 
 class aim::package {
 

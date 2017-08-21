@@ -1,10 +1,18 @@
 # ------------------------------------------------------------------------------------------
-#   Copyright (c) 2016 CyberArk Software Inc.
+#   Copyright (c) 2017 CyberArk Software Inc.
 #
-# This function is called from init.pp to retrieve the administrative credentials
-# from the preinstalled provider. The credentials will be used to create environment of
-# the deployed provider (through REST commands to PVWA).
-# The function calls object GetPass  with the given query
+# Functions:
+#
+#  * :cyberark_credential - it retrieves a credential from CyberArk Vault. It uses CyberArk
+#                           Java Password SDK, passing the criteria based on parameters.
+#
+#  * :cyberark_random_password - Returns a random password generated using SecureRandom
+#                                function.
+#
+#  * :cyberark_new_session_id - Returns a session by increasing the store value in file
+#                               /tmp/counter_aim_sessionid; it uses file lock mechanism to
+#                               achieve atomic sessionId allocation.
+#
 # ------------------------------------------------------------------------------------------
 
 #Including Jruby Java interface and loading CyberArk Jar

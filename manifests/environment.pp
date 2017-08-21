@@ -1,6 +1,20 @@
 
 require 'securerandom'
 
+# ------------------------------------------------------------------------------------------
+#   Copyright (c) 2017 CyberArk Software Inc.
+#
+# Manifest of AIM module. It defines for puppet the steps that should be taken in order to
+# (un)install the Credential Provider on the node.
+# ------------------------------------------------------------------------------------------
+
+# aim::environment
+#
+# The aim::environment class makes sure the environment for the provider user is setup (if ensure == "present")
+# by creating the user in CyberArk Vault with a random password and creating a credential file for it.
+# It also makes sure the provider user is removed when ensure == "absent".
+#
+
 class aim::environment {
 
     $get_admin_info = { 'appId' => $aim::provider::admin_credential_aim_appid,

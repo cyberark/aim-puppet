@@ -4,46 +4,46 @@ require 'net/http'
 require 'json'
 
 module PuppetX
-    
+
     module CyberArk
-      
+
       class WebServices < Puppet::Provider
-              
+
         @@session_token = ""
-        
+
         @@authentication_info = {"username" => "scott"}
-        
+
         @@base_url = ""
-        
+
         @@webservices_certificate_file = ""
-        
+
         def self.set_base_url(url)
             Puppet.debug("Setting base_url to #{url}")
             @@base_url = url
         end
-        
+
         def self.base_url
-            
+
             #Puppet.debug("CyberArk_PVWA_BaseURL = " +  ENV["CyberArk_PVWA_BaseURL"])
             Puppet.debug("base url = #{@@base_url}")
-            
+
             return ENV["CyberArk_PVWA_BaseURL"] if @@base_url.empty? && ENV["CyberArk_PVWA_BaseURL"]
             return @@base_url
-            
+
         end
 
         def self.set_webservices_certificate_file(certfile)
             Puppet.debug("Setting certificate file to #{certfile}")
             @@webservices_certificate_file = certfile
         end
-        
+
         def self.webservices_certificate_file
-            
+
             Puppet.debug("certificate file = #{@@webservices_certificate_file}")
-            
+
             return ENV["CyberArk_PVWA_CertificateFile"] if @@webservices_certificate_file.empty? && ENV["CyberArk_PVWA_CertificateFile"]
             return @@webservices_certificate_file
-            
+
         end
 
         def self.calling_method
@@ -54,11 +54,11 @@ module PuppetX
             cm.tr!('\`','')
             cm
         end
-        
+
         def rest_call(action, url, data, resource)
             self.class.rest_call(action, url, data, resource)
         end
-        
+
         def self.post(url, data: data=nil, resource: resource=nil)
             begin
                 Puppet.debug("data #{data.to_s}")
@@ -67,7 +67,7 @@ module PuppetX
                 fail("puppet_x::CyberArk::WebServices.post: Error caught on POST: #{e}")
             end
         end
-        
+
         def self.put(url, data: data=nil, resource: resource=nil)
             begin
                 self.rest_call('PUT', url, data, resource)
@@ -75,7 +75,7 @@ module PuppetX
                 fail("puppet_x::CyberArk::WebServices.put: Error caught on PUT: #{e}")
             end
         end
-        
+
         def self.patch(url, data: data=nil, resouce: resource=nil)
             begin
                 self.rest_call('PATCH', url, data, resource)
@@ -83,7 +83,7 @@ module PuppetX
                 fail("puppet_x::CyberArk::WebServices.put: Error caught on PATCH: #{e}")
             end
         end
-        
+
         def self.delete(url, data: data=nil, resource: resource=nil)
             begin
                 self.rest_call('DELETE', url, data, resource)
@@ -91,7 +91,7 @@ module PuppetX
                 fail("puppet_x::CyberArk::WebServices.delete: Error caught on DELETE: #{e}")
             end
         end
-        
+
             def self.get(url, data: data=nil, resource: resource=nil)
                 #     def self.get(url, token, data=nil)
                 Puppet.debug("GET!!!  resource = #{resource}")
@@ -104,20 +104,20 @@ module PuppetX
                     fail("puppet_x::CyberArk::WebServices.get: Error caught on GET: #{e}")
                 end
             end
-        
+
             def self.rest_call(action, url, data, resource)
                 # Single method to make all calls to the respective RESTful API
 
-                if resource 
+                if resource
                     Puppet.debug("Resource passed #{resource[:resource].parameters.keys}")
                     if resource[:resource].parameters[:base_url] != nil
                         Puppet.debug("Setting base_url to #{resource[:resource].parameters[:base_url].value}")
                         self.set_base_url(resource[:resource].parameters[:base_url].value)
-                    end 
+                    end
                     if resource[:resource].parameters[:webservices_certificate_file] != nil
                         Puppet.debug("Setting certificate_file to #{resource[:resource].parameters[:webservices_certificate_file].value}")
                         self.set_webservices_certificate_file(resource[:resource].parameters[:webservices_certificate_file].value)
-                    end 
+                    end
                 end
 
                 if base_url + "/" + url !~ URI::regexp
@@ -161,7 +161,7 @@ module PuppetX
 
                 req.set_content_type('application/json')
 
-                if action !~ /logon/i  && @@session_token.empty? 
+                if action !~ /logon/i  && @@session_token.empty?
                     Puppet.debug("Session Token not set, authenticating first")
                     self.web_service_logon(resource)
                     Puppet.debug("SessionToken=#{@@session_token}")
@@ -207,13 +207,13 @@ module PuppetX
                     if resource[:resource].parameters[:login_username] && resource[:resource].parameters[:login_password]
                         data['username'] = resource[:resource].parameters[:login_username].value
                         data['password'] = resource[:resource].parameters[:login_password].value
-                        
-                        if resource[:resource].parameters[:connection_number] != nil 
+
+                        if resource[:resource].parameters[:connection_number] != nil
                             connection_number = resource[:resource].parameters[:connection_number].value.to_i
                             data['connectionNumber'] = connection_number
                             Puppet.debug("Connection Number => #{resource[:resource].parameters[:connection_number].value.to_i}")
                         end
-                        
+
                         Puppet.debug("logon data => #{data.to_json}")
                     else
                         fail("webservices::#{calling_method}: Unable to logon. Missing username/password")
@@ -222,7 +222,7 @@ module PuppetX
 
                 response = self.rest_call("LOGON", endpoint_url, data.to_json, resource)
                 Puppet.debug("Response => #{response.code}")
-                if response.code == "200" 
+                if response.code == "200"
                     result = JSON.parse(response.body)
                     if result.key?('LogonResult')
                         @@session_token = result['LogonResult']
@@ -236,7 +236,7 @@ module PuppetX
                 end
             end
 
-                
+
             def self.valid_json?(json)
                 Puppet.debug(json)
                 JSON.parse(json)

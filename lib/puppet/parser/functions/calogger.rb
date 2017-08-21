@@ -1,14 +1,13 @@
 # ------------------------------------------------------------------------------------------
-#   Copyright (c) 2016 CyberArk Software Inc.
+#   Copyright (c) 2017 CyberArk Software Inc.
 #
-#
-#
-#  Optionally initialize log file for deployed provider.
+#  calogger: Function to initialize CyberArk logger.
 # ------------------------------------------------------------------------------------------
 
 require 'logger'
 
 module Puppet::Parser::Functions
+
     newfunction(:calogger, :type => :rvalue) do |args|
 
         # Full path to log file. If an empty string is set (""), then logs will be redirected to Puppet builtin logging mechanism.
@@ -35,4 +34,5 @@ module Puppet::Parser::Functions
         logger.debug("****************************************")
         logger.close
   end
+
 end

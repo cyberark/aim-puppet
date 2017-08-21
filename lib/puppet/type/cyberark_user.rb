@@ -12,7 +12,7 @@ Puppet::Type.newtype(:cyberark_user) do
     newparam(:username, :namevar => true) do
         desc 'An arbitrary name used as the identity of the resource.'
     end
-    
+
     add_parameter_base_url
     add_parameter_webservices_certificate_file
     add_parameter_login_username
@@ -21,9 +21,9 @@ Puppet::Type.newtype(:cyberark_user) do
     add_parameter_use_radius_authentication
     add_parameter_connection_number
     add_parameter_use_shared_logon_authentication
-    
+
     newparam(:initial_password)
-    newparam(:groups_to_be_added_to)    
+    newparam(:groups_to_be_added_to)
 
     newproperty(:email)
     newproperty(:first_name)
@@ -33,5 +33,5 @@ Puppet::Type.newtype(:cyberark_user) do
     newproperty(:user_type_name)
     newproperty(:disabled)
     newproperty(:location)
-    
+
 end
