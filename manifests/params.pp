@@ -44,7 +44,7 @@ class aim::params {
 
     $aim_distribution_file          = ''
     $aim_folder_within_distribution = ''
-    $distribution_source_path       = 'puppet:///aim_module'
+    $distribution_source_path       = 'puppet:///modules/aim'
 
     # The filename of the RPM  to be installed
     $installed_rpm                  = 'CARKaim-9.60.0.17.x86_64.rpm'

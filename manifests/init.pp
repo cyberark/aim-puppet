@@ -50,7 +50,7 @@ class aim::provider (
     String $aim_rpm_to_install = $aim::params::aim_rpm_to_install,
 ) inherits  aim::params {
 
-
+    #include stdlib
     include '::aim::package'
     include '::aim::environment'
     include '::aim::service'

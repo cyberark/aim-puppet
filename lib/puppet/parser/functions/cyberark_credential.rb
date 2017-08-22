@@ -61,12 +61,14 @@ module Puppet::Parser::Functions
                 passRequest.setObject(@pwdAdminInfo["object"])
             end
             if @pwdAdminInfo.key? "query"
-                @logger.debug("GetPass() : passRequest.setObject(\"" + @pwdAdminInfo["query"] + "\")");
+                @logger.debug("GetPass() : passRequest.setQuery(\"" + @pwdAdminInfo["query"] + "\")");
                 passRequest.setQuery(@pwdAdminInfo["query"])
             end
 
             password = Java::Javapasswordsdk::PSDKPassword
             password = Java::Javapasswordsdk::PasswordSDK::getPassword (passRequest)
+
+            @logger.debug(" Result = " + password.getUserName());
 
             return [password.getUserName(), password.getContent()]
         rescue Exception => e
@@ -75,12 +77,12 @@ module Puppet::Parser::Functions
         end
     end
 
-    newfunction(:cyberark_random_password, :type => :rvalue) do
+    newfunction(:cyberark_random_password, :type => :rvalue) do |args|
         require 'securerandom'
         return "X_"+SecureRandom.hex(10)
     end
 
-    newfunction(:cyberark_new_session_id, :type => :rvalue) do
+    newfunction(:cyberark_new_session_id, :type => :rvalue) do |args|
 
         filenameCounterSessionId = "/tmp/counter_aim_sessionid"
 
@@ -101,6 +103,5 @@ module Puppet::Parser::Functions
         }
         return sid
     end
-
 
 end

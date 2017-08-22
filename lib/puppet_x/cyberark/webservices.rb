@@ -55,7 +55,7 @@ module PuppetX
             cm
         end
 
-        def rest_call(action, url, data, resource)
+        def rest_call(action, url, data: data, resource: resource)
             self.class.rest_call(action, url, data, resource)
         end
 
@@ -76,7 +76,7 @@ module PuppetX
             end
         end
 
-        def self.patch(url, data: data=nil, resouce: resource=nil)
+        def self.patch(url, data: data=nil, resource: resource=nil)
             begin
                 self.rest_call('PATCH', url, data, resource)
             rescue Exception => e

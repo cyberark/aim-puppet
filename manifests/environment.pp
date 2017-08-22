@@ -52,9 +52,9 @@ class aim::environment {
 
             # Create credential file for the new provider
             exec { 'createcred_exec' :
-                command => '/opt/CARKaim/bin/createcredfile /etc/opt/CARKaim/vault/appprovideruser.cred Password '\
-                          "-Username ${aim::provider::provider_username} -Password ${prov_user_pwd} "\
-                          '-apptype AppPrv -hostname -displayrestrictions',
+                command => "/opt/CARKaim/bin/createcredfile /etc/opt/CARKaim/vault/appprovideruser.cred Password \
+                            -Username ${aim::provider::provider_username} -Password ${prov_user_pwd} \
+                            -apptype AppPrv -hostname -displayrestrictions",
                 cwd     => '/opt/CARKaim/bin/',
             }
 

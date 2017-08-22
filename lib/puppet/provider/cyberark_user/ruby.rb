@@ -12,8 +12,7 @@ Puppet::Type.type(:cyberark_user).provide(:ruby, :parent => PuppetX::CyberArk::W
 
     def self.instances
         Puppet.debug("def self.instances ==> returning empty list")
-        result = []
-        result
+        return []
     end
 
     def self.prefetch(resources)
