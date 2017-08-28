@@ -48,6 +48,7 @@ class aim::provider (
     String $aim_folder_within_distribution = $aim::params::aim_folder_within_distribution,
     String $distribution_source_path = $aim::params::distribution_source_path,
     String $aim_rpm_to_install = $aim::params::aim_rpm_to_install,
+    Stdlib::Absolutepath $aim_temp_install_path = $aim::params::aim_temp_install_path,
 ) inherits  aim::params {
 
     #include stdlib

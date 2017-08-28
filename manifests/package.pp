@@ -18,7 +18,7 @@ class aim::package {
 
     if ($aim::provider::ensure == 'present') {
 
-        notify {"CyberArk aim::package [${aim::provider::package_is_installed}]": withpath => true}
+        # notify {"CyberArk aim::package [${aim::provider::package_is_installed}]": withpath => true}
 
         if ($aim::provider::package_is_installed == false) {
 
@@ -29,23 +29,24 @@ class aim::package {
                 $folder_within_archive = $aim::provider::aim_folder_within_distribution
             }
 
-            $tmp_directory = '/tmp/puppetInstallAIM'
+            $tmp_directory = $aim::provider::aim_distribution_file
             $aim_file_archive = $aim::provider::aim_distribution_file
 
             $full_path = "${tmp_directory}/${aim_file_archive}"
 
-            # make dir temporary folder 'puppetInstallAIM'
-            file {'create_directory':
-                ensure => 'directory',
-                path   => $tmp_directory,
+            # conditional logic with exec where if the folder exists then go to remove, and then straight to creation
+
+            exec { 'remove_temp_folder_ifexists':
+                path    => '/bin',
+                command => "rm -fr ${tmp_directory} ",
+                onlyif  => "test -d ${tmp_directory}"
             }
 
-            # remove unconditionally temporary folder
-            tidy {'remove_directory_content':
+            # make dir temporary folder
+            file {'create_directory':
+                ensure  => 'directory',
                 path    => $tmp_directory,
-                recurse => true,
-                rmdirs  => true,
-                require => File['create_directory'],
+                require => Exec['remove_temp_folder_ifexists']
             }
 
             file { 'deliver_file':
@@ -54,7 +55,7 @@ class aim::package {
                 owner   => root,
                 group   => root,
                 source  => "${aim::provider::distribution_source_path}/${aim_file_archive}",
-                require => Tidy['remove_directory_content'],
+                require => File['create_directory'],
             }
 
             archive { 'extract_install_files':
@@ -65,25 +66,17 @@ class aim::package {
                 require      => File['deliver_file'],
             }
 
-            # copy installation folder to avoid recursive dependency
-            file { 'duplicate installation folder':
-                path    => '/tmp/installation',
-                source  => "${tmp_directory}/${folder_within_archive}",
-                recurse => true,
-                require => Archive['extract_install_files'],
-            }
-
             # chmod CreateCredFile to executable
             file { 'change_createcredfile':
-                path    => '/tmp/installation/CreateCredFile',
+                path    => "${tmp_directory}/CreateCredFile",
                 mode    => '0700',
-                require => File['duplicate installation folder'],
+                require => Archive['extract_install_files'],
             }
 
             file { 'copy_aimparms':
                 ensure  => present,
                 path    => '/var/tmp/aimparms',
-                source  => '/tmp/installation/aimparms.sample',
+                source  => "${tmp_directory}/${folder_within_archive}/aimparms.sample",
                 require => File['change_createcredfile'],
             }
 
@@ -122,7 +115,7 @@ class aim::package {
                 ensure  => present,
                 section => 'Main',
                 setting => 'VaultFilePath',
-                value   => '/tmp/installation/Vault.ini',
+                value   => "${tmp_directory}/${folder_within_archive}/Vault.ini",
                 path    => '/var/tmp/aimparms',
                 require => File['copy_aimparms'],
             }
@@ -140,7 +133,7 @@ class aim::package {
             # Install Package
             package { 'CARKaim':
                 ensure   => installed,
-                source   => "/tmp/installation/${aim::provider::aim_rpm_to_install}",
+                source   => "${tmp_directory}/${folder_within_archive}/${aim::provider::aim_rpm_to_install}",
                 provider => 'rpm',
                 require  => Ini_setting['VaultFilePath'],
             }
@@ -149,7 +142,7 @@ class aim::package {
             file { 'CopyVaultConfigFileParams':
                 ensure  => present,
                 path    => '/etc/opt/CARKaim/vault/vault.ini',
-                source  => '/tmp/installation/Vault.ini',
+                source  => "${tmp_directory}/${folder_within_archive}/Vault.ini",
                 require => Package['CARKaim'],
             }
 
@@ -186,14 +179,9 @@ class aim::package {
                 }
             }
 
-            # delete unconditionally (no 'require') temporary folder 'puppetInstallAIM'
-            exec {'/bin/rm -rf /tmp/puppetInstallAIM  ':
-                cwd     =>'/tmp/',
-                require => File['CopyVaultConfigFileParams'],
-            }
-
-            # delete unconditionally (no 'require') temporary folder 'puppetInstallAIM'
-            exec {'/bin/rm -rf /tmp/installation  ':
+            # delete unconditionally (no 'require') temporary folder
+            exec {'remove_unconditionally_tmp_directory':
+                command => "/bin/rm -rf ${tmp_directory}",
                 cwd     =>'/tmp/',
                 require => File['CopyVaultConfigFileParams'],
             }

@@ -50,4 +50,6 @@ class aim::params {
     $installed_rpm                  = 'CARKaim-9.60.0.17.x86_64.rpm'
     $aim_rpm_to_install             = ''
 
+    $aim_temp_install_path          = '/tmp/puppetInstallAIM'
+
 }
