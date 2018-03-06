@@ -6,8 +6,9 @@
 
 require 'logger'
 
-module Puppet::Parser::Functions
+Puppet::Functions.create_function(:'calogger') do 
 
+  def calogger()
     newfunction(:calogger, :type => :rvalue) do |args|
 
         # Full path to log file. If an empty string is set (""), then logs will be redirected to Puppet builtin logging mechanism.

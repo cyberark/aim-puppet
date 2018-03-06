@@ -16,9 +16,9 @@
 
 class aim::package {
 
-    if ($aim::provider::ensure == 'present') {
+    notify {"CyberArk aim::package [${aim::provider::package_is_installed}]": withpath => true}
 
-        # notify {"CyberArk aim::package [${aim::provider::package_is_installed}]": withpath => true}
+    if ($aim::provider::ensure == 'present') {
 
         if ($aim::provider::package_is_installed == false) {
 
@@ -29,7 +29,7 @@ class aim::package {
                 $folder_within_archive = $aim::provider::aim_folder_within_distribution
             }
 
-            $tmp_directory = $aim::provider::aim_distribution_file
+            $tmp_directory = $aim::provider::aim_temp_install_path
             $aim_file_archive = $aim::provider::aim_distribution_file
 
             $full_path = "${tmp_directory}/${aim_file_archive}"

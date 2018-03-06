@@ -1,0 +1,35 @@
+{
+  "name": "aim-puppet",
+  "version": "1.0.0",
+  "author": "CyberArk",
+  "summary": "Installs, configures, and manages the CyberArk AIM Credential Provider",
+  "license": "Apache-2.0",
+  "source": "https://github.com/cyberark/aim-puppet",
+  "project_page": "https://github.com/cyberark/aim-puppet",
+  "issues_url": "https://github.com/cyberark/aim-puppet/issues",
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "ubuntu",
+      "operatingsystemrelease": ["14.04", "16.04"]
+    },
+    {
+      "operatingsystem": "centos",
+      "operatingsystemrelease": ["6", "7"]
+    },
+    {
+      "operatingsystem": "debian",
+      "operatingsystemrelease": ["7", "8"]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.0.0 < 5.0.0"
+    }
+  ]
+}

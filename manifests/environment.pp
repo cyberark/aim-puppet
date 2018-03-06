@@ -1,4 +1,6 @@
 
+include java
+
 require 'securerandom'
 
 # ------------------------------------------------------------------------------------------
@@ -25,10 +27,16 @@ class aim::environment {
 
         if ($aim::provider::package_is_installed == false) {
 
-            if $aim::provider::use_shared_logon_authentication == false {
+            if $aim::provider::use_shared_logon_authentication == false and $aim::provider::admin_credential_aim_query != '' {
                 # Retrieve administrative credential
                 $user_and_pwd = cyberark_credential($get_admin_info, $aim::provider::aim_path_log_file)
                 $session_id = cyberark_new_session_id()
+            } elsif $aim::provider::vault_username != '' and $aim::provider::vault_password != '' {
+                $user_and_pwd = ["${aim::provider::vault_username}", "${aim::provider::vault_password}"]
+                $session_id = 1
+            } elsif ($aim::provider::use_shared_logon_authentication == false) {
+                notify { "You need to supply either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication": }
+                fail("You need to supply either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication")
             } else {
                 $user_and_pwd = ['','']
                 $session_id = 0
@@ -64,10 +72,16 @@ class aim::environment {
 
         if ($aim::provider::package_is_installed) {
 
-            if $aim::provider::use_shared_logon_authentication == false {
+            if $aim::provider::use_shared_logon_authentication == false and $aim::provider::admin_credential_aim_query != '' {
                 # Retrieve administrative credential
                 $user_and_pwd = cyberark_credential($get_admin_info, $aim::provider::aim_path_log_file)
                 $session_id = cyberark_new_session_id()
+            } elsif $aim::provider::vault_username != '' and $aim::provider::vault_password != '' {
+                $user_and_pwd = ["${aim::provider::vault_username}", "${aim::provider::vault_password}"]
+                $session_id = 1
+            } elsif ($aim::provider::use_shared_logon_authentication == false) {
+                notify { "You need to supply either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication": }
+                fail("You need to supply either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication")
             } else {
                 $user_and_pwd = ['','']
                 $session_id = 0

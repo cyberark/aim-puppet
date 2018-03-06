@@ -30,6 +30,8 @@
 # @param aim_rpm_to_install [String] Specifies the name of the RPM file to install.
 
 class aim::provider (
+    String $vault_username = '',
+    String $vault_password = '',
     String $ensure = 'present',
     String $vault_address = $aim::params::vault_address,
     Integer $vault_port = $aim::params::vault_port,
@@ -51,15 +53,19 @@ class aim::provider (
     Stdlib::Absolutepath $aim_temp_install_path = $aim::params::aim_temp_install_path,
 ) inherits  aim::params {
 
-    #include stdlib
+    # notify {"vault_username=${vault_username} and password=${vault_password}": }
+
     include '::aim::package'
     include '::aim::environment'
     include '::aim::service'
+
+    include '::aim::test'
 
     anchor { 'aim::provider::start': }
     -> Class['aim::package']
     ~> Class['aim::environment']
     -> Class['aim::service']
+    -> Class['aim::test']
     -> anchor { 'aim::provider::end': }
 
 }

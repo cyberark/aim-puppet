@@ -1,0 +1,3 @@
+--pattern "spec/**/*.rb"
+--format documentation
+-I /opt/CARKaim/sdk/javapasswordsdk.jar

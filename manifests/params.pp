@@ -26,7 +26,8 @@ class aim::params {
     # note that the key "query" comes as alternative to "safe", "folder" and "object"
     $use_shared_logon_authentication = false
     $admin_credential_aim_appid     = 'PuppetTest'
-    $admin_credential_aim_query     = 'Safe=CyberArk Passwords;Folder=ROOT;Object=AdminPass'
+    $admin_credential_aim_query     = ''
+    #'Safe=CyberArk Passwords;Folder=ROOT;Object=AdminPass'
 
     $aim_path_log_file              = "/tmp/deploy${facts['hostname']}.log"
 
